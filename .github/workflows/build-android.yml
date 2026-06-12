@@ -1,1 +1,232 @@
- 
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:          # allows manual trigger from GitHub UI
+
+# ── What this workflow does ──────────────────────────────────────────────────
+# 1. Installs Node.js, Java, Android SDK
+# 2. Installs all npm dependencies
+# 3. Generates app icons (all densities) and splash screens from source PNG
+# 4. Builds the Vite web bundle
+# 5. Syncs to Capacitor Android
+# 6. Signs the APK with your keystore (stored as GitHub Secrets)
+# 7. Uploads the signed APK as a downloadable artifact
+# ─────────────────────────────────────────────────────────────────────────────
+
+jobs:
+  build-android:
+    name: Build & Sign Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+
+      # ── 1. Checkout repo ───────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Node.js ──────────────────────────────────────────────────
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ── 3. Set up Java 17 (required by Android Gradle) ────────────────────
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version:  '17'
+
+      # ── 4. Set up Android SDK ──────────────────────────────────────────────
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ── 5. Accept Android SDK licences ────────────────────────────────────
+      - name: Accept Android SDK licences
+        run: yes | sdkmanager --licenses || true
+
+      # ── 6. Install Android build tools & platform ─────────────────────────
+      - name: Install Android build tools
+        run: |
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "cmdline-tools;latest"
+
+      # ── 7. Install npm dependencies ───────────────────────────────────────
+      - name: Install npm dependencies
+        run: npm ci
+
+      # ── 8. Install Capacitor CLI globally ─────────────────────────────────
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      # ── 9. Create .env file from GitHub Secrets ───────────────────────────
+      #       All VITE_* vars must be added as Repository Secrets in:
+      #       GitHub → Settings → Secrets and variables → Actions
+      - name: Create .env.local from secrets
+        run: |
+          cat > .env.local << EOF
+          VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_VAPID_KEY=${{ secrets.VITE_FIREBASE_VAPID_KEY }}
+          VITE_APP_NAME=Honiara Taxi Network
+          VITE_APP_VERSION=1.0.0
+          VITE_COMPANY_NAME=MereSimi Studios Ltd
+          VITE_MAP_CENTER_LAT=-9.4333
+          VITE_MAP_CENTER_LNG=160.0520
+          VITE_MAP_DEFAULT_ZOOM=13
+          VITE_SERVICE_RADIUS_KM=30
+          VITE_CUSTOMER_SUB_PRICE=20
+          VITE_VEHICLE_SUB_PRICE=20
+          VITE_GPS_INTERVAL_MS=20000
+          VITE_DISPATCH_TIMEOUT_MS=30000
+          EOF
+
+      # ── 10a. Write google-services.json from secret ─────────────────────────
+      - name: Create google-services.json
+        run: |
+          mkdir -p android/app
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+
+      # ── 10. Install sharp for icon/splash generation ───────────────────────
+      - name: Install image processing tools
+        run: npm install -g sharp-cli @capacitor/assets
+
+      # ── 11. Generate all Android icons and splash screens ─────────────────
+      #        Requires:  resources/icon.png     (1024x1024, no transparency)
+      #                   resources/splash.png   (2732x2732, centred logo)
+      #                   resources/icon-fg.png  (foreground layer, adaptive icon)
+      #        Outputs:   android/app/src/main/res/mipmap-*/
+      #                   android/app/src/main/res/drawable-*/
+      - name: Generate app icons and splash screens
+        run: |
+          npx @capacitor/assets generate \
+            --android \
+            --iconBackgroundColor '#0A0C0F' \
+            --iconBackgroundColorDark '#0A0C0F' \
+            --splashBackgroundColor '#0A0C0F' \
+            --splashBackgroundColorDark '#0A0C0F'
+
+      # ── 12. Build Vite web bundle ──────────────────────────────────────────
+      - name: Build web app (Vite)
+        run: npm run build
+
+      # ── 13. Capacitor sync ────────────────────────────────────────────────
+      #        Copies dist/ into android/ and updates plugins
+      - name: Capacitor sync Android
+        run: npx cap sync android
+
+      # ── 14. Install Gradle wrapper ────────────────────────────────────────
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      # ── 15. Cache Gradle dependencies ─────────────────────────────────────
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      # ── 16. Build debug APK (no signing needed — for testing) ─────────────
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ── 17. Build release APK ─────────────────────────────────────────────
+      - name: Build release APK (unsigned)
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # ── 18. Decode and save keystore from secret ──────────────────────────
+      #        To create keystore:
+      #          keytool -genkey -v -keystore htn-release.jks \
+      #            -alias htn-key -keyalg RSA -keysize 2048 -validity 10000
+      #        Then base64 encode it:
+      #          base64 -i htn-release.jks | pbcopy   (macOS)
+      #          base64 htn-release.jks               (Linux)
+      #        Paste the output as ANDROID_KEYSTORE_BASE64 in GitHub Secrets
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/htn-release.jks
+
+      # ── 19. Sign the release APK ──────────────────────────────────────────
+      - name: Sign release APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_apk
+        with:
+          releaseDirectory:  android/app/build/outputs/apk/release
+          signingKeyBase64:  ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          alias:             ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyStorePassword:  ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword:       ${{ secrets.ANDROID_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: '34.0.0'
+
+      # ── 20. Rename APK with version and date ──────────────────────────────
+      - name: Rename signed APK
+        run: |
+          DATE=$(date +'%Y%m%d')
+          cp "${{ steps.sign_apk.outputs.signedReleaseFile }}" \
+             "HTN-v1.0.0-${DATE}-release.apk"
+
+      # ── 21. Upload debug APK as artifact ──────────────────────────────────
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HTN-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      # ── 22. Upload signed release APK as artifact ─────────────────────────
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: HTN-release-apk-signed
+          path: HTN-v1.0.0-*-release.apk
+          retention-days: 30
+
+      # ── 23. Print APK info ────────────────────────────────────────────────
+      - name: Print build summary
+        run: |
+          echo "✅ Build complete"
+          echo ""
+          echo "Debug APK:"
+          ls -lh android/app/build/outputs/apk/debug/*.apk
+          echo ""
+          echo "Release APK:"
+          ls -lh HTN-v1.0.0-*-release.apk
+
+
+  # ── Bonus job: notify on success (optional — remove if not needed) ────
+  notify:
+    name: Post build summary
+    runs-on: ubuntu-latest
+    needs: build-android
+    if: always()
+    steps:
+      - name: Build result
+        run: |
+          if [ "${{ needs.build-android.result }}" == "success" ]; then
+            echo "✅ HTN Android build succeeded"
+            echo "Download the APK from the Actions → Artifacts section"
+          else
+            echo "❌ HTN Android build failed — check the logs above"
+          fi
