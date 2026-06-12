@@ -1,0 +1,95 @@
+// android/build.gradle
+// MereSimi Studios Ltd — Honiara Taxi Network
+
+buildscript {
+    ext {
+        compileSdkVersion   = 34
+        minSdkVersion       = 23
+        targetSdkVersion    = 34
+        androidxAppCompatVersion         = '1.6.1'
+        androidxActivityVersion          = '1.8.0'
+        androidxExifInterfaceVersion     = '1.3.7'
+        androidxCoreVersion              = '1.12.0'
+        androidxFragmentVersion          = '1.6.2'
+        coreSplashScreenVersion          = '1.0.1'
+        cordovaAndroidVersion            = '10.1.1'
+        firebaseMessagingVersion         = '23.4.1'
+        playServicesLocationVersion      = '21.3.0'
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+        classpath 'com.google.gms:google-services:4.4.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23'
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    namespace               'com.meresimistudios.htn'
+    compileSdk              rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId       'com.meresimistudios.htn'
+        minSdk              rootProject.ext.minSdkVersion
+        targetSdk           rootProject.ext.targetSdkVersion
+        versionCode         1
+        versionName         '1.0.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+    signingConfigs {
+        release {
+            storeFile       file('htn-release.jks')
+            storePassword   System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: ''
+            keyAlias        System.getenv('ANDROID_KEY_ALIAS')         ?: 'htn-key'
+            keyPassword     System.getenv('ANDROID_KEY_PASSWORD')      ?: ''
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix   '-debug'
+            debuggable          true
+        }
+        release {
+            minifyEnabled       false
+            signingConfig       signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.activity:activity:$androidxActivityVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation "com.google.firebase:firebase-messaging:$firebaseMessagingVersion"
+    implementation "com.google.android.gms:play-services-location:$playServicesLocationVersion"
+
+    // Capacitor core
+    implementation project(':capacitor-android')
+    implementation project(':capacitor-app')
+    implementation project(':capacitor-geolocation')
+    implementation project(':capacitor-push-notifications')
+    implementation project(':capacitor-status-bar')
+    implementation project(':capacitor-haptics')
+}
+
+apply plugin: 'com.google.gms.google-services'
