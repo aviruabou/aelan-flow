@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MereSimi Studios Ltd — Honiara Taxi Network -->
+<resources>
+    <string name="app_name">HTN</string>
+    <string name="title_activity_main">Honiara Taxi Network</string>
+    <string name="package_name">com.meresimistudios.htn</string>
+    <string name="custom_url_scheme">com.meresimistudios.htn</string>
+</resources>

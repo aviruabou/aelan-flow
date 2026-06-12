@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MereSimi Studios Ltd — Honiara Taxi Network -->
+<resources>
+    <!-- HTN brand colours -->
+    <color name="colorPrimary">#F5A623</color>       <!-- HTN Gold -->
+    <color name="colorPrimaryDark">#C4841C</color>   <!-- HTN Gold Dim -->
+    <color name="colorAccent">#00C896</color>        <!-- HTN Emerald -->
+
+    <!-- Background colours -->
+    <color name="windowBackground">#0A0C0F</color>   <!-- HTN Obsidian -->
+    <color name="colorSurface">#111318</color>
+    <color name="colorElevated">#1A1D24</color>
+
+    <!-- Status / navigation bar -->
+    <color name="statusBarColor">#0A0C0F</color>
+    <color name="navigationBarColor">#0A0C0F</color>
+</resources>

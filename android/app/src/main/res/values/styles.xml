@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MereSimi Studios Ltd — Honiara Taxi Network -->
+<resources>
+
+    <!-- Base theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/windowBackground</item>
+    </style>
+
+    <!-- Splash screen theme (shown during app launch) -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <!-- Splash background -->
+        <item name="android:windowSplashScreenBackground">@color/windowBackground</item>
+        <!-- Splash icon (centred, shown on splash) -->
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <!-- Brand colour shown below icon -->
+        <item name="android:windowSplashScreenBrandingImage">@drawable/splash</item>
+        <!-- Post-splash theme -->
+        <item name="postSplashScreenTheme">@style/AppTheme</item>
+        <item name="android:statusBarColor">@color/windowBackground</item>
+        <item name="android:navigationBarColor">@color/windowBackground</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+
+</resources>
