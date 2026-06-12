@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dark mode overrides — same as default since HTN is always dark -->
+<resources>
+    <color name="windowBackground">#0A0C0F</color>
+    <color name="colorSurface">#111318</color>
+</resources>
