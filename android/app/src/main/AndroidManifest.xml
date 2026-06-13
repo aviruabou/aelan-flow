@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MereSimi Studios Ltd — Honiara Taxi Network -->
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.meresimistudios.htn">
-
-    <!-- ── Permissions ───────────────────────────────────────────────── -->
+    package="com.meresimi.aelanflow">
 
     <!-- Internet -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- GPS — Fine + Coarse + Background (drivers need background GPS) -->
+    <!-- GPS -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
@@ -20,18 +17,16 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-    <!-- Wake lock (keep GPS alive in background) -->
+    <!-- Wake lock -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- Camera (for document scanning at office) -->
+    <!-- Camera -->
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Storage (for document upload) -->
+    <!-- Storage -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- ── Application ───────────────────────────────────────────────── -->
 
     <application
         android:allowBackup="true"
@@ -44,10 +39,9 @@
         android:hardwareAccelerated="true"
         android:largeHeap="true">
 
-        <!-- Main Activity -->
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
-            android:name="com.meresimistudios.htn.MainActivity"
+            android:name="com.meresimi.aelanflow.MainActivity"
             android:label="@string/title_activity_main"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBarLaunch"
@@ -59,7 +53,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Firebase Cloud Messaging service -->
         <service
             android:name="com.getcapacitor.plugin.push.MessagingService"
             android:exported="false">
@@ -68,7 +61,6 @@
             </intent-filter>
         </service>
 
-        <!-- FCM default notification channel -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" />
@@ -78,16 +70,9 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="htn_bookings" />
-
-        <!-- Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${MAPS_API_KEY}" />
-
-        <!-- Splash screen (Android 12+) -->
-        <meta-data
-            android:name="android.windowSplashScreenBackground"
-            android:value="#0A0C0F" />
 
     </application>
 
