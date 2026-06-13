@@ -1,20 +1,18 @@
 // android/build.gradle
-// MereSimi Studios Ltd — Honiara Taxi Network
+// MereSimi Studios Ltd — Aelan Flow
 
 buildscript {
     ext {
-        compileSdkVersion   = 34
-        minSdkVersion       = 23
-        targetSdkVersion    = 34
-        androidxAppCompatVersion         = '1.6.1'
-        androidxActivityVersion          = '1.8.0'
-        androidxExifInterfaceVersion     = '1.3.7'
-        androidxCoreVersion              = '1.12.0'
-        androidxFragmentVersion          = '1.6.2'
-        coreSplashScreenVersion          = '1.0.1'
-        cordovaAndroidVersion            = '10.1.1'
-        firebaseMessagingVersion         = '23.4.1'
-        playServicesLocationVersion      = '21.3.0'
+        compileSdkVersion                        = 34
+        minSdkVersion                            = 23
+        targetSdkVersion                         = 34
+        androidxAppCompatVersion                 = '1.6.1'
+        androidxActivityVersion                  = '1.8.0'
+        androidxCoreVersion                      = '1.12.0'
+        androidxFragmentVersion                  = '1.6.2'
+        coreSplashScreenVersion                  = '1.0.1'
+        firebaseMessagingVersion                 = '23.4.1'
+        playServicesLocationVersion              = '21.3.0'
     }
     repositories {
         google()
@@ -30,25 +28,16 @@ buildscript {
 apply plugin: 'com.android.application'
 
 android {
-    namespace               'com.meresimistudios.htn'
+    namespace               'com.meresimi.aelanflow'
     compileSdk              rootProject.ext.compileSdkVersion
 
     defaultConfig {
-        applicationId       'com.meresimistudios.htn'
+        applicationId       'com.meresimi.aelanflow'
         minSdk              rootProject.ext.minSdkVersion
         targetSdk           rootProject.ext.targetSdkVersion
         versionCode         1
         versionName         '1.0.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    }
-
-    signingConfigs {
-        release {
-            storeFile       file('htn-release.jks')
-            storePassword   System.getenv('ANDROID_KEYSTORE_PASSWORD') ?: ''
-            keyAlias        System.getenv('ANDROID_KEY_ALIAS')         ?: 'htn-key'
-            keyPassword     System.getenv('ANDROID_KEY_PASSWORD')      ?: ''
-        }
     }
 
     buildTypes {
@@ -58,8 +47,7 @@ android {
             debuggable          true
         }
         release {
-            minifyEnabled       false
-            signingConfig       signingConfigs.release
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -83,7 +71,6 @@ dependencies {
     implementation "com.google.firebase:firebase-messaging:$firebaseMessagingVersion"
     implementation "com.google.android.gms:play-services-location:$playServicesLocationVersion"
 
-    // Capacitor core
     implementation project(':capacitor-android')
     implementation project(':capacitor-app')
     implementation project(':capacitor-geolocation')
