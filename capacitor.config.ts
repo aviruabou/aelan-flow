@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId:   'com.meresimistudios.htn',
-  appName: 'HTN',
+  appId:   'com.meresimi.aelanflow',
+  appName: 'Aelan Flow',
   webDir:  'dist',
   server: {
     androidScheme: 'https',
